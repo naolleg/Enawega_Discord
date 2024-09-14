@@ -1,13 +1,12 @@
-// src/components/ChatRoom.js
 import React, { useState, useEffect } from 'react';
+import { io } from 'socket.io-client';
 
 const ChatRoom = () => {
   const [messages, setMessages] = useState([]);
   const [newMessage, setNewMessage] = useState('');
 
   useEffect(() => {
-    // Connect to the socket.io server
-    const socket = io();
+    const socket = io(); // Initialize the socket.io client
 
     // Listen for new messages
     socket.on('message', (message) => {

@@ -3,6 +3,7 @@ import cors from "cors";
 import { fileURLToPath } from 'url';
 import * as path from 'path';
 import http from 'http';
+import formatMessage from "./utils/messages";
 import { Server } from 'socket.io';
 
 const app = express();
@@ -12,7 +13,7 @@ const io = new Server(server);
 app.use(express.json());
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
-app.use(express.static(path.join(__dirname, "client")));
+
 app.use(cors({ origin: true }));
 
 

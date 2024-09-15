@@ -1,6 +1,6 @@
 import moment from 'moment';
 
-function formatMessage(username, text) {
+export default function formatMessage(username, text) {
   return {
     username,
     text,

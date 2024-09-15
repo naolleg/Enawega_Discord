@@ -2,6 +2,7 @@ import express from "express";
 import cors from "cors";
 import { fileURLToPath } from 'url';
 import * as path from 'path';
+import  {HOST, PORT}  from './src/config/secrete.js';
 import http from 'http';
 import formatMessage from "./utils/messages";
 import { Server } from 'socket.io';
@@ -15,6 +16,12 @@ const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
 
 app.use(cors({ origin: true }));
+import  {
+  userJoin,
+  getCurrentUser,
+  userLeave,
+  getRoomUsers,
+} from "./utils/user";
 
 
 io.on('connection', (socket) => {
@@ -31,8 +38,6 @@ io.on('connection', (socket) => {
   })
 });
 
-const PORT = 3001 || process.env.PORT;
-const HOST = "localhost" || process.env.HOST;
 
 app.listen(PORT, () => console.log(`server running on port ${PORT}`));
 console.log(`server is running on http://${HOST}:${PORT}`);

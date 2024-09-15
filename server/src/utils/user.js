@@ -24,7 +24,7 @@ function getRoomUsers(room) {
   return users.filter(user => user.room === room);
 }
 
-export default {
+export {
   userJoin,
   getCurrentUser,
   userLeave,

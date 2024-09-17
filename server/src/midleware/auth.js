@@ -36,5 +36,4 @@ const isAuthUser = async (req,res,next)=>{
 
 }
 
-
 export {isAuthUser};

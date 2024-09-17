@@ -16,6 +16,7 @@ const profileController={
           username:true,
           email: true,
           phonenumber:true,
+          avatar: true
         },
       });
   

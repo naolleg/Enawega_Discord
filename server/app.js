@@ -27,10 +27,18 @@ import  {
   getRoomUsers
 } from "./src/utils/user.js";
 
+(async () => {
+  pubClient = createClient({ url: "redis://localhost:6379" });
+  await pubClient.connect();
+  subClient = pubClient.duplicate();
+  io.adapter(createAdapter(pubClient, subClient));
+})();
+
+const botName = "Enawega Bot";
 
 io.on('connection', (socket) => {
     console.log("new connection");
-    socket.emit('message','welcome to chat')
+    socket.emit("message", formatMessage(botName, "Welcome to Enawega!"));
 
     socket.broadcast.emit('message','user joined');
   socket.on('disconnect',()=> {

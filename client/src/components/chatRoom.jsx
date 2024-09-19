@@ -1,58 +1,50 @@
-import React, { useState, useEffect } from 'react';
-import { io } from 'socket.io-client';
+import React from 'react';
 
-const ChatRoom = () => {
-  const [messages, setMessages] = useState([]);
-  const [newMessage, setNewMessage] = useState('');
-
-  useEffect(() => {
-    const socket = io(); // Initialize the socket.io client
-
-    // Listen for new messages
-    socket.on('message', (message) => {
-      setMessages((prevMessages) => [...prevMessages, message]);
-    });
-
-    return () => {
-      // Disconnect from the socket.io server
-      socket.disconnect();
-    };
-  }, []);
-
-  const handleSendMessage = (event) => {
-    event.preventDefault();
-    // Send the new message to the server
-    socket.emit('chatMessage', newMessage);
-    setNewMessage('');
-  };
-
+function ChatRoom() {
   return (
-    <div className="h-screen flex flex-col justify-center items-center">
-      <h1 className="text-3xl font-bold">Chat Room</h1>
-      <ul className="list-none mb-4">
-        {messages.map((message, index) => (
-          <li key={index} className="py-2">
-            <span className="text-gray-600">{message.username}:</span> {message.text}
-          </li>
-        ))}
-      </ul>
-      <form onSubmit={handleSendMessage}>
-        <input
-          type="text"
-          value={newMessage}
-          onChange={(event) => setNewMessage(event.target.value)}
-          className="w-full p-2 pl-10 text-sm text-gray-700"
-          placeholder="Type a message..."
-        />
-        <button
-          type="submit"
-          className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded"
-        >
-          Send
-        </button>
-      </form>
+    <div className="max-w-md mx-auto p-4 pt-6 md:p-6 lg:p-12">
+      <header className="flex justify-between mb-4">
+        <h1 className="text-lg font-bold">
+          <i className="fas fa-smile mr-2" />
+          ChatCord
+        </h1>
+        <a id="leave-btn" className="bg-red-500 hover:bg-red-700 text-white font-bold py-2 px-4 rounded">
+          Leave Room
+        </a>
+      </header>
+      <main className="flex">
+        <div className="w-1/3 bg-gray-100 p-4">
+          <h3 className="text-sm font-bold mb-2">
+            <i className="fas fa-comments mr-2" />
+            Room Name:
+          </h3>
+          <h2 id="room-name" className="text-lg font-bold mb-4"></h2>
+          <h3 className="text-sm font-bold mb-2">
+            <i className="fas fa-users mr-2" />
+            Users
+          </h3>
+          <ul id="users" className="list-none mb-4"></ul>
+        </div>
+        <div className="w-2/3 p-4"></div>
+      </main>
+      <div className="mt-4">
+        <form id="chat-form" className="flex">
+          <input
+            id="msg"
+            type="text"
+            placeholder="Enter Message"
+            required
+            autocomplete="off"
+            className="w-full p-2 pl-10 text-sm text-gray-700"
+          />
+          <button className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">
+            <i className="fas fa-paper-plane mr-2" />
+            Send
+          </button>
+        </form>
+      </div>
     </div>
   );
-};
+}
 
 export default ChatRoom;

@@ -1,5 +1,5 @@
 import { Router } from "express";
-import userController from "./userController.js";
+import userController from "./usercontroller.js";
 import errorHandler from "../../midleware/error.js";
 const userRouter = Router();
 
@@ -10,5 +10,6 @@ userRouter.put('/change-password/:id',errorHandler(userController.changePassword
 userRouter.put('/reset-password',errorHandler(userController.resetPassword));
 userRouter.post('/otpverify',(userController.otpVerification));
 userRouter.put('/newpassword',errorHandler(userController.newPassword));
+
 export default userRouter;
     

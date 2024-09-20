@@ -6,6 +6,7 @@ import  {HOST, PORT}  from './src/config/secrete.js';
 import http from 'http';
 import formatMessage from "./src/utils/message.js";
 import { Server } from 'socket.io';
+import appRouter from './src/route/index.js';
 
 const app = express();
 const server = http.createServer(app);
@@ -26,13 +27,14 @@ import  {
   userLeave,
   getRoomUsers
 } from "./src/utils/user.js";
+app.use('/api', appRouter);
 
-(async () => {
-  pubClient = createClient({ url: "redis://localhost:6379" });
-  await pubClient.connect();
-  subClient = pubClient.duplicate();
-  io.adapter(createAdapter(pubClient, subClient));
-})();
+// (async () => {
+//   const pubClient = createClient({ url: "redis://localhost:6379" });
+//   await pubClient.connect();
+//   subClient = pubClient.duplicate();
+//   io.adapter(createAdapter(pubClient, subClient));
+// })();
 
 const botName = "Enawega Bot";
 

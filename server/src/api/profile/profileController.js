@@ -1,6 +1,4 @@
 import { prisma } from "../../config/prisma.js";
-import { NextFunction, Request, Response } from "express";
-
 
 const profileController={
   getProfile: async (req, res) => {

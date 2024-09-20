@@ -1,9 +1,8 @@
 import { prisma } from "../../config/prisma.js";
 import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
-import { STATUS } from "@prisma/client";
 import { SECRET } from "../../config/secrete.js";
-import { generatePassword } from "../../utils/generator.js"
+import { generatePassword } from "../../utils/generate.js"
 import { sendEmail } from "../../utils/emailSender.js";
 
 const userController = {
@@ -30,8 +29,8 @@ const userController = {
         email: req.body.email,
         username:req.body.username,
         passwordHash: hashedPassword,
-        phonenumber:req/body.phonenumber    
-       
+        phonenumber:req.body.phonenumber,    
+        avatarId:req.body.avatarId
       },
     });
   
@@ -59,6 +58,7 @@ const userController = {
       },
     });
    
+    console.log(user);
     
     if (!user) {
       return res.status(404).json({
@@ -67,12 +67,13 @@ const userController = {
       });
     }
 
-    if (!bcrypt.compareSync(req.body.password, user.passwordHash)) {
+    if (!bcrypt.compareSync(req.body.passwordHash, user.passwordHash)) {
       return res.status(404).json({
         success: false,
         message: "password is incorrect",
       });
     }
+    console.log("hoiiii");
     
     const payload = {
       id: user.id,

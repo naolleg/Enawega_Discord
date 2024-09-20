@@ -5,6 +5,7 @@ const userRouter = Router();
 
 userRouter.post('/signup',errorHandler(userController.signup));
 userRouter.get('/getAll',errorHandler(userController.getAll));
+userRouter.get('/getAllAvatar',errorHandler(userController.getAllAvatar));
 userRouter.post('/login',errorHandler(userController.login));
 userRouter.put('/change-password/:id',errorHandler(userController.changePassword));
 userRouter.put('/reset-password',errorHandler(userController.resetPassword));

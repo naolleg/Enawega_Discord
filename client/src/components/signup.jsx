@@ -1,24 +1,41 @@
-import React, { useState } from 'react';
+import React, { useState , useEffect } from 'react';
 import logo from '../assets/Enawega.png';
+import axios from 'axios';
 
 const Signup = () => {
   const [username, setUsername] = useState('');
   const [email, setEmail] = useState('');
-  const [phoneNumber, setPhoneNumber] = useState('');
-  const [password, setPassword] = useState('');
+  const [phonenumber, setPhoneNumber] = useState('');
+  const [passwordHash, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
-  const [avatar, setAvatar] = useState('');
+  const [avatars, setAvatars] = useState([]);
+  const [avatarId, setavatarId] = useState('');
   const [error, setError] = useState(null);
+
+  useEffect(() => {
+    axios.get('http://localhost:7777/api/user/getAllAvatar')
+      .then(response => {
+        setAvatars(response.data);
+      })
+      .catch(error => {
+        console.error(error);
+      });
+  }, []);
+
 
   const handleSubmit = (event) => {
     event.preventDefault();
-    if (password !== confirmPassword) {
-      setError('Passwords do not match');
-      return;
-    }
-    const userData = { username, email, phoneNumber, password, avatar };
-    // Call API to create new user
-    console.log(userData);
+    const userData = { username, email, phonenumber, passwordHash, avatarId: parseInt(avatarId) };
+
+    axios.post('http://localhost:7777/api/user/signup', userData)
+      .then(response => {
+        console.log(response.data);
+        window.location.href = '/';
+      })
+      .catch(error => {
+        console.error(error);
+        // Handle error response
+      });
   };
 
   return (
@@ -61,7 +78,7 @@ const Signup = () => {
                 className="shadow appearance-none border rounded w-full py-2 px-3 text-[#B9BBBE] leading-tight focus:outline-none focus:shadow-outline bg-[#2F3136]"
                 id="phoneNumber"
                 type="tel"
-                value={phoneNumber}
+                value={phonenumber}
                 onChange={(event) => setPhoneNumber(event.target.value)}
                 placeholder="+234 812 345 6789"
               />
@@ -74,7 +91,7 @@ const Signup = () => {
                 className="shadow appearance-none border rounded w-full py-2 px-3 text-[#B9BBBE] leading-tight focus:outline-none focus:shadow-outline bg-[#2F3136]"
                 id="password"
                 type="password"
-                value={password}
+                value={passwordHash}
                 onChange={(event) => setPassword(event.target.value)}
                 placeholder="********"
               />
@@ -93,17 +110,21 @@ const Signup = () => {
               />
             </div>
             <div className="mb-4">
-              <label className="block text-[#B9BBBE] text-sm font-bold mb-2" htmlFor="avatar">
-                Choose Avatar
-              </label>
-              <input
-                className="shadow appearance-none border rounded w-full py-2 px-3 text-[#B9BBBE] leading-tight focus:outline-none focus:shadow-outline bg-[#2F3136]"
-                id="avatar"
-                type="file"
-                value={avatar}
-                onChange={(event) => setAvatar(event.target.value)}
-              />
-            </div>
+            <label className="block text-gray-700 text-sm font-bold mb-2" htmlFor="avatar">
+              avatar
+            </label>
+            <select
+              className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+              id="avatar"
+              value={avatarId}
+              onChange={e => setavatarId(e.target.value)}
+            >
+<option value="">Select an avatar</option>
+    {Array.isArray(avatars) && avatars.map((avatar) => (
+      <option key={avatar.id} value={avatar.id}>{avatar.image}</option>
+              ))}
+            </select>
+          </div>
             <div className="flex justify-center">
               <button
                 className="bg-gradient-to-r from-[#5865F2] to-[#3A45B3] hover:bg-gradient-to-r from-[#4752C4] to-[#3A45B3] text-white font-bold py-2 px-4 rounded mb-4"

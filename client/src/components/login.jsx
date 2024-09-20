@@ -1,15 +1,33 @@
 import React, { useState } from 'react';
+import axios from 'axios';
 import logo from '../assets/Enawega.png';
 
 const Login = () => {
   const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
+  const [passwordHash, setPassword] = useState('');
   const [error, setError] = useState(null);
 
   const handleSubmit = (event) => {
     event.preventDefault();
-    const userData = { email, password };
-    window.location.href = '/rooms'; 
+    const userData = { email, passwordHash };
+console.log("JHJP");
+
+    axios.post('http://localhost:7777/api/user/login', userData)
+      .then((response) => {
+        console.log("fbhsdkbxj");
+        
+        const { token} = response.data;
+        console.log(token);
+        
+        localStorage.setItem("token", token);
+        const {id} =response.data.data;
+        localStorage.setItem("userId", JSON.stringify(id));
+
+        window.location.href = '/rooms'; // Redirect to DepartmentView page
+      })
+      .catch((error) => {
+        setError(error.message);
+      });
   };
 
   return (
@@ -32,14 +50,14 @@ const Login = () => {
             />
           </div>
           <div className="mb-4">
-            <label className="block text-[#B9BBBE] text-sm font-bold mb-2" htmlFor="password">
+            <label className="block text-[#B9BBBE] text-sm font-bold mb-2" htmlFor="passwordHash">
               Password
             </label>
             <input
               className="shadow appearance-none border rounded w-full py-2 px-3 text-[#B9BBBE] leading-tight focus:outline-none focus:shadow-outline bg-[#2F3136]"
               id="password"
               type="password"
-              value={password}
+              value={passwordHash}
               onChange={(event) => setPassword(event.target.value)}
               placeholder="********"
             />

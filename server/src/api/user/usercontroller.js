@@ -68,6 +68,8 @@ const userController = {
     }
 
     if (!bcrypt.compareSync(req.body.passwordHash, user.passwordHash)) {
+      console.log("bgdfns");
+      
       return res.status(404).json({
         success: false,
         message: "password is incorrect",
@@ -145,6 +147,17 @@ const userController = {
         throw(error);
       }
     },
+    getAllAvatar:async(req,res)=>{
+
+      try {
+          const avatars= await prisma.avatar.findMany();
+          
+          res.status(200).json({ success: true,
+            message: "all Avatars",avatars});
+        } catch (error) {
+          throw(error);
+        }
+      },
   resetPassword: async (req, res) => {
     const email = req.body.email;
     if (!email) {

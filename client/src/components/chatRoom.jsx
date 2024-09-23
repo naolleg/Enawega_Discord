@@ -1,12 +1,11 @@
 import React, { useState, useEffect } from 'react';
-import { useLocation } from 'react-router-dom';
+import { useLocation, useNavigate } from 'react-router-dom';
 import { io } from 'socket.io-client';
-
-
 
 const ChatRoom = () => {
   const location = useLocation();
   const { username, category } = location.state;
+  const navigate = useNavigate();
 
   const [messages, setMessages] = useState([]);
   const [newMessage, setNewMessage] = useState('');
@@ -33,13 +32,24 @@ const ChatRoom = () => {
     setMessages((prevMessages) => [...prevMessages, { text: newMessage, username }]);
   };
 
+  const handleLeaveRoom = () => {
+    socket.emit('leaveRoom', { username, room: category });
+    navigate('/rooms', { replace: true });
+  };
+
   return (
     <div className="bg-slate-700">
       <div className="h-screen flex-col justify-center items-center bg-black ">
-        <header className="justify-between items-center py-4 px-6 bg-slate-600">
-          <h1 className="text-2xl mb-10 font-bold text-white">{category} Room</h1>
-          <p className="text-lg text-white">Welcome, {username}!</p>
-        </header>
+      <header className="flex justify-between items-center py-4 px-6 bg-slate-600">
+  <h1 className="text-2xl mb-10 font-bold text-white">{category} Room</h1>
+  <p className="text-lg text-white">Welcome, {username}!</p>
+  <button
+    className="bg-white hover:bg-red-700 text-red-500 font-bold py-2 px-4 rounded-lg"
+    onClick={handleLeaveRoom}
+  >
+    Leave Room
+  </button>
+</header>
         <main className="flex-1 overflow-y-auto p-4">
           <div className="flex-1 overflow-y-auto p-4">
             <ul className="list-none p-0 m-0">

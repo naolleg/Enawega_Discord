@@ -10,7 +10,7 @@ import appRouter from './src/route/index.js';
 import redis from "redis"
 import { createAdapter } from '@socket.io/redis-adapter';
 const { createClient } = redis;
-
+import { userJoin, getCurrentUser, userLeave, getRoomUsers } from "./src/utils/user.js";
 
 const app = express();
 const server = http.createServer(app);
@@ -25,12 +25,6 @@ app.get('/',(req,res,next)=>{
 
 
 app.use(cors({ origin: true }));
-import  {
-  userJoin,
-  getCurrentUser,
-  userLeave,
-  getRoomUsers
-} from "./src/utils/user.js";
 app.use('/api', appRouter);
 
 (async () => {
@@ -41,19 +35,56 @@ app.use('/api', appRouter);
 })();
 
 const botName = "Enawega Bot";
+io.on("connection", (socket) => {
+  console.log(io.of("/").adapter);
+  socket.on("joinRoom", ({ username, room }) => {
+    const user = userJoin(socket.id, username, room);
+              
+    socket.join(user.room);
+           
+    // Welcome current user
+    socket.emit("message", formatMessage(botName, "Welcome to ChatCord!"));
+             
+    // Broadcast when a user connects
+    socket.broadcast
+      .to(user.room)
+      .emit(
+        "message",
+        formatMessage(botName, `${user.username} has joined the chat`)
+      );
 
-io.on('connection', (socket) => {
-    console.log("new connection");
-    socket.emit("message", formatMessage(botName, "Welcome to Enawega!"));
-    socket.broadcast.emit('message','user joined');
-  socket.on('disconnect',()=> {
-    io.emit('message','a user has left chat');
+    // Send users and room info
+    io.to(user.room).emit("roomUsers", {
+      room: user.room,
+      users: getRoomUsers(user.room),
+    });
   });
 
-  socket.on('ChatMessage',msg => {
-    io.emit('chat')
-  })
+  // Listen for chatMessage
+  socket.on("chatMessage", (msg) => {
+    const user = getCurrentUser(socket.id);
+
+    io.to(user.room).emit("message", formatMessage(user.username, msg));
+  });
+
+  // Runs when client disconnects
+  socket.on("disconnect", () => {
+    const user = userLeave(socket.id);
+
+    if (user) {
+      io.to(user.room).emit(
+        "message",
+        formatMessage(botName, `${user.username} has left the chat`)
+      );
+
+      // Send users and room info
+      io.to(user.room).emit("roomUsers", {
+        room: user.room,
+        users: getRoomUsers(user.room),
+      });
+    }
+  });
 });
-
-
-app.listen(PORT, () => console.log(`server running on http://${HOST}:${PORT}`));
+server.listen(PORT, () => {
+  console.log(`Server listening on ${PORT}`);
+});

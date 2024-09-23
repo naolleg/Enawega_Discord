@@ -1,5 +1,7 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import bluenight from '../assets/bluenight.jpeg';
+import { useNavigate } from 'react-router-dom';
+import axios from 'axios';
 
 const categories = [
   { id: 1, name: 'Fashion' },
@@ -17,14 +19,34 @@ const categories = [
 
 const Joinroom = () => {
   const [selectedCategory, setSelectedCategory] = useState(null);
+  const [username, setUsername] = useState(null);
+  const navigate = useNavigate();
 
   const handleCategorySelect = (category) => {
     setSelectedCategory(category);
   };
 
-  const handleJoinRoom = () => {
-    console.log(`Joining room: ${selectedCategory.name}`);
+  const handleJoinRoom = async () => {
+    try {
+      const userId = localStorage.getItem("userId");
+      const response = await axios.get(`http://localhost:7777/api/profile/getProfile/${userId}`);
+      const userData = response.data;
+      setUsername(userData.username);
+    } catch (error) {
+      console.error(error);
+    }
   };
+
+  useEffect(() => {
+    if (selectedCategory && username) {
+      navigate('/chatroom', {
+        state: {
+          username,
+          category: selectedCategory.name,
+        },
+      });
+    }
+  }, [selectedCategory, username, navigate]);
 
   return (
     <div

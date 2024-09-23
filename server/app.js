@@ -7,6 +7,10 @@ import http from 'http';
 import formatMessage from "./src/utils/message.js";
 import { Server } from 'socket.io';
 import appRouter from './src/route/index.js';
+import redis from "redis"
+import { createAdapter } from '@socket.io/redis-adapter';
+const { createClient } = redis;
+
 
 const app = express();
 const server = http.createServer(app);
@@ -29,19 +33,18 @@ import  {
 } from "./src/utils/user.js";
 app.use('/api', appRouter);
 
-// (async () => {
-//   const pubClient = createClient({ url: "redis://localhost:6379" });
-//   await pubClient.connect();
-//   subClient = pubClient.duplicate();
-//   io.adapter(createAdapter(pubClient, subClient));
-// })();
+(async () => {
+  const pubClient = createClient({ url: "redis://localhost:6379" });
+  await pubClient.connect();
+  const subClient = pubClient.duplicate();
+  io.adapter(createAdapter(pubClient, subClient));
+})();
 
 const botName = "Enawega Bot";
 
 io.on('connection', (socket) => {
     console.log("new connection");
     socket.emit("message", formatMessage(botName, "Welcome to Enawega!"));
-
     socket.broadcast.emit('message','user joined');
   socket.on('disconnect',()=> {
     io.emit('message','a user has left chat');

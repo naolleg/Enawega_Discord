@@ -2,8 +2,9 @@ import { prisma } from "../../config/prisma.js";
 
 const profileController={
   getProfile: async (req, res) => {
-    const userId = req.user?.id;
-    if (!userId) {
+    const userId = parseInt(req.params.id, 10);
+  
+    if (isNaN(userId) || userId <= 0) {
       return res.status(401).json({ error: 'Unauthorized' });
     }
     try {

@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { io } from 'socket.io-client';
+import moment from 'moment'
 
 const ChatRoom = () => {
   const location = useLocation();
@@ -42,7 +43,6 @@ const ChatRoom = () => {
       <div className="h-screen flex-col justify-center items-center bg-black ">
       <header className="flex justify-between items-center py-4 px-6 bg-slate-600">
   <h1 className="text-2xl mb-10 font-bold text-white">{category} Room</h1>
-  <p className="text-lg text-white">Welcome, {username}!</p>
   <button
     className="bg-white hover:bg-red-700 text-red-500 font-bold py-2 px-4 rounded-lg"
     onClick={handleLeaveRoom}
@@ -52,17 +52,20 @@ const ChatRoom = () => {
 </header>
         <main className="flex-1 overflow-y-auto p-4">
           <div className="flex-1 overflow-y-auto p-4">
-            <ul className="list-none p-0 m-0">
-              {messages.map((message, index) => (
-                <li key={index} className="py-2 px-4 border-b border-gray-600">
-                  <div className="flex justify-between items-center">
-                    <p className="text-sm text-white">{message.text}</p>
-                    <p className="text-xs text-gray-400">{message.time}</p>
-                  </div>
-                </li>
-              ))}
-            </ul>
-          </div>
+          <ul className="list-none p-0 m-0">
+          <p className="text-lg justify-center text-blue-800">Welcome, {username}!</p>
+  {messages.map((message, index) => (
+    <li key={index} className="py-2 px-4 w-52 border-gray-600">
+      <div className="flex m-2 justify-between bg-gray-800 rounded-lg p-2">
+        <div className="flex flex-col">
+          <p className="text-sm  text-purple-500">{message.username}</p>
+          <p className="text-sm text-white">{message.text}</p>
+        </div>
+        <p className="text-sm text-gray-500">{moment(message.time).format('h:mm a')}</p>
+      </div>
+    </li>
+  ))}
+</ul></div>
           <div className="fixed bottom-0 left-0 right-0 flex flex-row justify-between items-center p-4 m-8 mx-96 bg-gray-800 rounded-lg">
             <input
               type="text"
@@ -72,21 +75,11 @@ const ChatRoom = () => {
               className="w-full p-2 pl-10 text-sm text-white bg-transparent border-none"
             />
             <button
-              className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-lg"
+              className="bg-blue-500 hover:bg-blue-700 m-4 text-white font-bold py-2 px-4 rounded-lg"
               onClick={handleSendMessage}
             >
               Send
             </button>
-          </div>
-          <div className="p-4">
-            <h2 className="text-lg text-white">Room Users:</h2>
-            <ul className="list-none p-0 m-0">
-              {roomUsers.map((user, index) => (
-                <li key={index} className="py-2 px-4">
-                  <p className="text-sm text-white">{user.username}</p>
-                </li>
-              ))}
-            </ul>
           </div>
         </main>
       </div>

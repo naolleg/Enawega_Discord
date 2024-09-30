@@ -7,9 +7,6 @@ import http from 'http';
 import formatMessage from "./src/utils/message.js";
 import { Server } from 'socket.io';
 import appRouter from './src/route/index.js';
-import redis from "redis"
-import { createAdapter } from '@socket.io/redis-adapter';
-const { createClient } = redis;
 import { userJoin, getCurrentUser, userLeave, getRoomUsers } from "./src/utils/user.js";
 
 const app = express();
@@ -23,20 +20,13 @@ app.get('/',(req,res,next)=>{
   return res.send('server is working');
 });
 
-
 app.use(cors({ origin: true }));
 app.use('/api', appRouter);
 
-(async () => {
-  const pubClient = createClient({ url: "redis://localhost:6379" });
-  await pubClient.connect();
-  const subClient = pubClient.duplicate();
-  io.adapter(createAdapter(pubClient, subClient));
-})();
-
 const botName = "Enawega Bot";
 io.on("connection", (socket) => {
-  console.log(io.of("/").adapter);
+  console.log("Client connected");
+
   socket.on("joinRoom", ({ username, room }) => {
     const user = userJoin(socket.id, username, room);
               
@@ -85,6 +75,6 @@ io.on("connection", (socket) => {
     }
   });
 });
-server.listen(PORT, () => {
+server.listen(PORT, '0.0.0.0', () => {
   console.log(`Server listening on ${PORT}`);
 });

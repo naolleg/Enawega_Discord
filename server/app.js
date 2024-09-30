@@ -17,7 +17,7 @@ app.use(express.json());
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
 app.get('/',(req,res,next)=>{
-  return res.send('server is working');
+  return res.send('server is working fine');
 });
 
 app.use(cors({ origin: true }));

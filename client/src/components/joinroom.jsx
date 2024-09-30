@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import bluenight from '../assets/bluenight.jpeg';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
+const url = import.meta.env.VITE_URL;
 
 const categories = [
   { id: 1, name: 'Fashion' },
@@ -29,7 +30,7 @@ const Joinroom = () => {
   const handleJoinRoom = async () => {
     try {
       const userId = localStorage.getItem("userId");
-      const response = await axios.get(`http://localhost:7777/api/profile/getProfile/${userId}`);
+      const response = await axios.post(`${url}/api/profile/getProfile/${userId}`);
       const userData = response.data;
       setUsername(userData.username);
     } catch (error) {

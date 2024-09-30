@@ -1,7 +1,10 @@
 import React, { useState } from 'react';
 import axios from 'axios';
 import logo from '../assets/Enawega.png';
+import dotenv from 'dotenv';
+dotenv.config();
 
+export const URL = process.env.URL;
 const Login = () => {
   const [email, setEmail] = useState('');
   const [passwordHash, setPassword] = useState('');
@@ -12,7 +15,7 @@ const Login = () => {
     const userData = { email, passwordHash };
 console.log("JHJP");
 
-    axios.post('http://localhost:7777/api/user/login', userData)
+    axios.post(`${URL}/api/user/login`, userData)
       .then((response) => {
         console.log("fbhsdkbxj");
         

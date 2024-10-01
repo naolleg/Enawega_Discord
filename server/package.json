@@ -6,7 +6,7 @@
   "type": "module",
   "scripts": {
     "start": "node app",
-    "build": "nodemon app"
+    "build": "prisma generate && nodemon app"
 
   },
   "keywords": [],

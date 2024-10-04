@@ -1,31 +1,46 @@
-import express from "express";
-import cors from "cors";
+import express from 'express';
+import cors from 'cors';
 import { fileURLToPath } from 'url';
 import * as path from 'path';
-import  {HOST, PORT}  from './src/config/secrete.js';
+import { HOST, PORT } from './src/config/secrete.js';
 import http from 'http';
 import formatMessage from "./src/utils/message.js";
 import { Server } from 'socket.io';
 import appRouter from './src/route/index.js';
-import { userJoin, getCurrentUser, userLeave, getRoomUsers } from "./src/utils/user.js";
+import { userJoin, getCurrentUser  , userLeave, getRoomUsers } from "./src/utils/user.js";
+import Redis from "ioredis";
+import { log } from 'util';
+
+const redisClient = new Redis({
+  host: 'localhost',
+  port: 6379,
+});
 
 const app = express();
 const server = http.createServer(app);
-const io = new Server(server);
+const io = new Server(server, {
+  cors: {
+    origin: 'http://localhost:5173',
+    methods: ['GET', 'POST'],
+  },
+});
 
 app.use(express.json());
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
-app.get('/',(req,res,next)=>{
+app.get('/', (req, res, next) => {
   return res.send('server is working fine');
 });
 
-app.use(cors({ origin: true }));
+app.use(cors({
+  origin: 'http://localhost:5173',
+  methods: ['GET', 'POST'],
+}));
 app.use('/api', appRouter);
 
 const botName = "Enawega Bot";
 io.on("connection", (socket) => {
-  console.log("Client connected");
+  //console.log("Client connected");
 
   socket.on("joinRoom", ({ username, room }) => {
     const user = userJoin(socket.id, username, room);
@@ -48,12 +63,35 @@ io.on("connection", (socket) => {
       room: user.room,
       users: getRoomUsers(user.room),
     });
-  });
 
+    // Retrieve messages from Redis
+    
+   redisClient.lrange(`chat_messages:${user.room}`, 0, -1, (err, messages) => {
+    if (err) {
+      console.error(err);
+    } else {
+      const parsedMessages = messages.map((message) => JSON.parse(message));
+      socket.emit("messages", parsedMessages);
+    }
+  });
+});
   // Listen for chatMessage
   socket.on("chatMessage", (msg) => {
     const user = getCurrentUser(socket.id);
-
+  
+    // Store message in Redis
+    redisClient.lpush(`chat_messages:${user.room}`, JSON.stringify(formatMessage(user.username, msg)));
+  
+    // Retrieve messages from Redis
+    redisClient.lrange(`chat_messages:${user.room}`, 0, -1, (err, messages) => {
+      if (err) {
+        console.error(err);
+      } else {
+        const parsedMessages = messages.map((message) => JSON.parse(message));
+        socket.emit("messages", parsedMessages);
+      }
+    });
+  
     io.to(user.room).emit("message", formatMessage(user.username, msg));
   });
 
@@ -75,6 +113,7 @@ io.on("connection", (socket) => {
     }
   });
 });
-server.listen(PORT, '0.0.0.0', () => {
-  console.log(`Server listening on ${PORT}`);
+
+server.listen(PORT, () => {
+  console.log(`Server running on port ${PORT}`);
 });

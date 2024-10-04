@@ -29,8 +29,12 @@ const Joinroom = () => {
 
   const handleJoinRoom = async () => {
     try {
+      
       const userId = localStorage.getItem("userId");
-      const response = await axios.post(`${url}/api/profile/getProfile/${userId}`);
+      console.log(userId);
+      console.log(url);
+      
+      const response = await axios.get(`${url}/api/profile/getProfile/${userId}`);
       const userData = response.data;
       setUsername(userData.username);
     } catch (error) {

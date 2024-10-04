@@ -11,13 +11,19 @@ const ChatRoom = () => {
   const [messages, setMessages] = useState([]);
   const [newMessage, setNewMessage] = useState('');
   const [roomUsers, setRoomUsers] = useState([]);
-  const PORT = 3000; 
+  const PORT = 8888; 
   const socket = io(`http://localhost:${PORT}`);
 
   useEffect(() => {
     console.log(`Welcome to ${category} room, ${username}!`);
     socket.emit('joinRoom', { username, room: category });
   }, [username, category]);
+
+  useEffect(() => {
+    socket.on('messages', (messages) => {
+      setMessages(messages);
+    });
+  }, [socket]);
 
   socket.on('message', (message) => {
     setMessages((prevMessages) => [...prevMessages, message]);
@@ -28,6 +34,7 @@ const ChatRoom = () => {
   });
 
   const handleSendMessage = () => {
+    console.log(`Sending message: ${newMessage}`);
     socket.emit('chatMessage', newMessage);
     setNewMessage('');
     setMessages((prevMessages) => [...prevMessages, { text: newMessage, username }]);
@@ -38,13 +45,14 @@ const ChatRoom = () => {
     navigate('/rooms', { replace: true });
   };
 
+
   return (
     <div className="bg-slate-700">
       <div className="h-screen flex-col justify-center items-center bg-black ">
       <header className="flex justify-between items-center py-4 px-6 bg-slate-600">
   <h1 className="text-2xl mb-10 font-bold text-white">{category} Room</h1>
   <button
-    className="bg-white hover:bg-red-700 text-red-500 font-bold py-2 px-4 rounded-lg"
+    className="bg-white hover:bg-red-700 text-red-500 font-bold py -2 px-4 rounded-lg"
     onClick={handleLeaveRoom}
   >
     Leave Room

@@ -4,17 +4,19 @@ import { fileURLToPath } from 'url';
 import * as path from 'path';
 import { HOST, PORT } from './src/config/secrete.js';
 import http from 'http';
-import formatMessage from "./src/utils/message.js";
+import formatMessage from './src/utils/message.js';
 import { Server } from 'socket.io';
 import appRouter from './src/route/index.js';
-import { userJoin, getCurrentUser  , userLeave, getRoomUsers } from "./src/utils/user.js";
-import Redis from "ioredis";
-import { log } from 'util';
+import { userJoin, getCurrentUser, userLeave, getRoomUsers } from './src/utils/user.js';
+import Redis from 'ioredis';
 
 const redisClient = new Redis({
   host: 'localhost',
   port: 6379,
+  retryStrategy: (times) => Math.min(times * 50, 2000), // Retry logic
 });
+
+redisClient.on('error', (err) => console.error('Redis Error:', err));
 
 const app = express();
 const server = http.createServer(app);
@@ -25,88 +27,65 @@ const io = new Server(server, {
   },
 });
 
+app.use(cors());
 app.use(express.json());
-const __dirname = path.dirname(fileURLToPath(import.meta.url));
-
-app.get('/', (req, res, next) => {
-  return res.send('server is working fine');
-});
-
-app.use(cors({
-  origin: 'http://localhost:5173',
-  methods: ['GET', 'POST'],
-}));
 app.use('/api', appRouter);
 
-const botName = "Enawega Bot";
-io.on("connection", (socket) => {
-  //console.log("Client connected");
+const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
-  socket.on("joinRoom", ({ username, room }) => {
+app.get('/', (req, res) => res.send('Server is working fine.'));
+
+const botName = 'Enawega Bot';
+
+io.on('connection', (socket) => {
+  socket.on('joinRoom', async ({ username, room }) => {
     const user = userJoin(socket.id, username, room);
-              
     socket.join(user.room);
-           
-    // Welcome current user
-    socket.emit("message", formatMessage(botName, "Welcome to ChatCord!"));
-             
-    // Broadcast when a user connects
+
+    socket.emit('message', formatMessage(botName, 'Welcome to Enawega Chat!'));
     socket.broadcast
       .to(user.room)
-      .emit(
-        "message",
-        formatMessage(botName, `${user.username} has joined the chat`)
-      );
+      .emit('message', formatMessage(botName, `${user.username} has joined the chat`));
 
-    // Send users and room info
-    io.to(user.room).emit("roomUsers", {
+    io.to(user.room).emit('roomUsers', {
       room: user.room,
       users: getRoomUsers(user.room),
     });
 
-    // Retrieve messages from Redis
-    
-   redisClient.lrange(`chat_messages:${user.room}`, 0, -1, (err, messages) => {
-    if (err) {
-      console.error(err);
-    } else {
-      const parsedMessages = messages.map((message) => JSON.parse(message));
-      socket.emit("messages", parsedMessages);
+    try {
+      const messages = await redisClient.lrange(`chat_messages:${user.room}`, 0, -1);
+      const parsedMessages = messages.map((msg) => JSON.parse(msg));
+      socket.emit('messages', parsedMessages);
+    } catch (err) {
+      console.error('Error retrieving messages:', err);
     }
   });
-});
-  // Listen for chatMessage
-  socket.on("chatMessage", (msg) => {
+
+  socket.on('chatMessage', async (msg) => {
     const user = getCurrentUser(socket.id);
-  
-    // Store message in Redis
-    redisClient.lpush(`chat_messages:${user.room}`, JSON.stringify(formatMessage(user.username, msg)));
-  
-    // Retrieve messages from Redis
-    redisClient.lrange(`chat_messages:${user.room}`, 0, -1, (err, messages) => {
-      if (err) {
-        console.error(err);
-      } else {
-        const parsedMessages = messages.map((message) => JSON.parse(message));
-        socket.emit("messages", parsedMessages);
+
+    if (user) {
+      const message = formatMessage(user.username, msg);
+
+      try {
+        await redisClient.lpush(`chat_messages:${user.room}`, JSON.stringify(message));
+        io.to(user.room).emit('message', message);
+      } catch (err) {
+        console.error('Error storing message:', err);
       }
-    });
-  
-    io.to(user.room).emit("message", formatMessage(user.username, msg));
+    }
   });
 
-  // Runs when client disconnects
-  socket.on("disconnect", () => {
+  socket.on('disconnect', () => {
     const user = userLeave(socket.id);
 
     if (user) {
       io.to(user.room).emit(
-        "message",
+        'message',
         formatMessage(botName, `${user.username} has left the chat`)
       );
 
-      // Send users and room info
-      io.to(user.room).emit("roomUsers", {
+      io.to(user.room).emit('roomUsers', {
         room: user.room,
         users: getRoomUsers(user.room),
       });

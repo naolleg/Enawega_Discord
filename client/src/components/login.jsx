@@ -13,7 +13,6 @@ const Login = () => {
     event.preventDefault();
     const userData = { email, passwordHash };
 console.log("JHJP");
-
     axios.post(`${url}/api/user/login`, userData)
       .then((response) => {
         console.log("fbhsdkbxj");

@@ -51,6 +51,7 @@ const userController = {
 
   login: async (req, res) => {
     console.log("sdfvsf");
+    console.log(req.body.email);
     
     const user = await prisma.user.findFirst({
       where: {
@@ -58,7 +59,7 @@ const userController = {
       },
     });
    
-    console.log(user);
+    console.log("hiiiii");
     
     if (!user) {
       return res.status(404).json({
@@ -136,12 +137,12 @@ const userController = {
       message: "password updated successfully",
       data: updateUser,
     });
-  },  getAll:async(req,re)=>{
+  },  getAll:async(req,res)=>{
 
     try {
         const users= await prisma.user.findMany();
         
-        res.status(200).json({ success: true,
+      return  res.status(200).json({ success: true,
           message: "all Users",users});
       } catch (error) {
         throw(error);

@@ -7,6 +7,7 @@ import useSocket from './SocketHandler';
 
 const ChatRoom = () => {
   const { state: { username, category } } = useLocation();
+  console.log('Username from Location:', username);
   const navigate = useNavigate();
   const [newMessage, setNewMessage] = useState('');
   const { messages, sendMessage, leaveRoom } = useSocket(username, category);
@@ -25,7 +26,7 @@ const ChatRoom = () => {
     <div className="bg-slate-700 h-screen flex flex-col">
       <RoomHeader category={category} handleLeaveRoom={handleLeaveRoom} />
       <main className="flex-1 overflow-y-auto p-4">
-        <MessageList messages={messages} />
+      <MessageList messages={messages} username={username} />
       </main>
       <MessageInput
         newMessage={newMessage}
@@ -37,3 +38,5 @@ const ChatRoom = () => {
 };
 
 export default ChatRoom;
+
+

@@ -1,17 +1,16 @@
-// /src/components/MessageList.jsx
 import React from 'react';
-import Message from './message';
+import moment from 'moment';
 
-const MessageList = ({ messages, onEdit, onDelete }) => {
+const MessageList = ({ messages }) => {
   return (
-    <div id="messages" className="space-y-2">
-      {messages.map((msg) => (
-        <Message
-          key={msg.id}
-          message={msg}
-          onEdit={onEdit}
-          onDelete={onDelete}
-        />
+    <div>
+      {messages.map((message, index) => (
+        <div key={index} className="bg-gray-800 text-white p-4 my-2 rounded">
+          <p>
+            <strong>{message.username}:</strong> {message.text}
+          </p>
+          <small className="text-gray-400">{moment(message.time).format('h:mm a')}</small>
+        </div>
       ))}
     </div>
   );

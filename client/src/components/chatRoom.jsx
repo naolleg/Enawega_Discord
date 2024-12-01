@@ -11,38 +11,49 @@ const ChatRoom = () => {
   const [socket, setSocket] = useState(null);
 
   useEffect(() => {
-    const newSocket = io('http://localhost:8888');
-    setSocket(newSocket);
+    // Initialize socket connection
+    const socketConnection = io('http://localhost:8888');
+    setSocket(socketConnection);
 
-    newSocket.emit('joinRoom', { username, room: category });
+    // Join the room with the specified username and category
+    socketConnection.emit('joinRoom', { username, room: category });
 
-    newSocket.on('message', (message) => {
-      setMessages((prev) => [...prev, message]);
+    // Listen for new messages and update the message list
+    socketConnection.on('message', (message) => {
+      setMessages((prevMessages) => [...prevMessages, message]);
     });
 
-    newSocket.on('messages', (history) => {
-      setMessages(history);
+    // Load message history upon joining the room
+    socketConnection.on('messages', (messageHistory) => {
+      setMessages(messageHistory);
     });
 
+    // Cleanup on component unmount
     return () => {
-      newSocket.disconnect();
+      socketConnection.disconnect();
     };
   }, [username, category]);
 
   const handleSendMessage = () => {
     if (newMessage.trim() && socket) {
+      // Emit the new message to the server
       socket.emit('chatMessage', newMessage);
       setNewMessage('');
     }
   };
 
   const handleLeaveRoom = () => {
-    socket.emit('leaveRoom');
+    // Notify the server when leaving the room
+    if (socket) {
+      socket.emit('leaveRoom');
+    }
+    // Navigate back to the room selection page
     navigate('/rooms');
   };
 
   return (
-    <div className="bg-slate-700 h-screen">
+    <div className="bg-slate-700 h-screen flex flex-col">
+      {/* Chat Room Header */}
       <header className="flex justify-between items-center py-4 px-6 bg-slate-600">
         <h1 className="text-2xl font-bold text-white">{category} Room</h1>
         <button
@@ -52,7 +63,9 @@ const ChatRoom = () => {
           Leave Room
         </button>
       </header>
-      <main className="p-4">
+
+      {/* Chat Messages */}
+      <main className="flex-1 overflow-y-auto p-4">
         <div>
           {messages.map((message, index) => (
             <div key={index} className="bg-gray-800 text-white p-4 my-2 rounded">
@@ -63,19 +76,24 @@ const ChatRoom = () => {
             </div>
           ))}
         </div>
-        <div className="fixed bottom-0 left-0 w-full p-4 bg-gray-900">
-          <input
-            type="text"
-            value={newMessage}
-            onChange={(e) => setNewMessage(e.target.value)}
-            className="w-3/4 p-2"
-            placeholder="Type a message"
-          />
-          <button className="bg-blue-500 text-white p-2 ml-2" onClick={handleSendMessage}>
-            Send
-          </button>
-        </div>
       </main>
+
+      {/* Message Input */}
+      <footer className="bg-gray-900 p-4 flex">
+        <input
+          type="text"
+          value={newMessage}
+          onChange={(e) => setNewMessage(e.target.value)}
+          className="flex-grow p-2 rounded-l"
+          placeholder="Type a message..."
+        />
+        <button
+          className="bg-blue-500 text-white p-2 rounded-r"
+          onClick={handleSendMessage}
+        >
+          Send
+        </button>
+      </footer>
     </div>
   );
 };

@@ -41,40 +41,74 @@ io.on('connection', (socket) => {
   socket.on('joinRoom', async ({ username, room }) => {
     const user = userJoin(socket.id, username, room);
     socket.join(user.room);
-
+  
     socket.emit('message', formatMessage(botName, 'Welcome to Enawega Chat!'));
     socket.broadcast
       .to(user.room)
       .emit('message', formatMessage(botName, `${user.username} has joined the chat`));
-
+  
     io.to(user.room).emit('roomUsers', {
       room: user.room,
       users: getRoomUsers(user.room),
     });
-
+  
     try {
       const messages = await redisClient.lrange(`chat_messages:${user.room}`, 0, -1);
       const parsedMessages = messages.map((msg) => JSON.parse(msg));
+      
+      // Send previously saved messages to the new user
       socket.emit('messages', parsedMessages);
     } catch (err) {
       console.error('Error retrieving messages:', err);
     }
   });
+  
 
   socket.on('chatMessage', async (msg) => {
     const user = getCurrentUser(socket.id);
-
+  
     if (user) {
       const message = formatMessage(user.username, msg);
-
+  
       try {
+        // Save the message in Redis with the timestamp
         await redisClient.lpush(`chat_messages:${user.room}`, JSON.stringify(message));
+  
+        // Emit the message to all clients in the room
         io.to(user.room).emit('message', message);
       } catch (err) {
         console.error('Error storing message:', err);
       }
     }
   });
+  // Edit Message
+  socket.on('editMessage', ({ room, messageId, newText }) => {
+    // Update the message text in Redis or DB
+    redisClient.lrange(`chat_messages:${room}`, 0, -1, (err, messages) => {
+      if (err) return;
+      const updatedMessages = messages.map((msg) => {
+        const parsed = JSON.parse(msg);
+        if (parsed.id === messageId) parsed.text = newText;
+        return JSON.stringify(parsed);
+      });
+      redisClient.del(`chat_messages:${room}`);
+      redisClient.rpush(`chat_messages:${room}`, ...updatedMessages);
+    });
+  
+    io.to(room).emit('messageUpdated', { messageId, newText });
+  });
+  
+  socket.on('deleteMessage', ({ room, messageId }) => {
+    redisClient.lrange(`chat_messages:${room}`, 0, -1, (err, messages) => {
+      if (err) return;
+      const filteredMessages = messages.filter((msg) => JSON.parse(msg).id !== messageId);
+      redisClient.del(`chat_messages:${room}`);
+      redisClient.rpush(`chat_messages:${room}`, ...filteredMessages);
+    });
+  
+    io.to(room).emit('messageDeleted', messageId);
+  });
+  
 
   socket.on('disconnect', () => {
     const user = userLeave(socket.id);

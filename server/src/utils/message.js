@@ -1,9 +1,9 @@
 
-export default function formatMessage(username, text) {
+export default function formatMessage (username, text){
   return {
     username,
-    text
-  };
+    text,
+    time: new Date().toISOString()
+};
+
 }
-
-

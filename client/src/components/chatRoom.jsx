@@ -4,6 +4,7 @@ import MessageList from '../markup/messageList';
 import MessageInput from '../markup/messageInput';
 import RoomHeader from '../markup/roomHeader';
 import useSocket from './SocketHandler';
+import Navbar from '../markup/header';
 
 const ChatRoom = () => {
   const { state: { username, category } } = useLocation();
@@ -23,6 +24,7 @@ const ChatRoom = () => {
   };
 
   return (
+    
     <div className="bg-slate-700 h-screen flex flex-col">
       <RoomHeader category={category} handleLeaveRoom={handleLeaveRoom} />
       <main className="flex-1 overflow-y-auto p-4">

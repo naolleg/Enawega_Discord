@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import bluenight from '../assets/bluenight.jpeg';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
+import Navbar from '../markup/header';
 const url = import.meta.env.VITE_URL;
 
 const categories = [
@@ -63,7 +64,7 @@ const Joinroom = () => {
         backgroundPosition: 'center',
         filter: 'grayscale(0.5) contrast(1.2)', 
       }}
-    >
+    > <Navbar/>
       <h1 className="text-5xl font-bold p-8 text-white bg-slate-600 m-4">
         Welcome to Enawega!
       </h1>

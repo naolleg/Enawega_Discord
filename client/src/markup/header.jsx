@@ -1,39 +1,41 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom'; // Use useNavigate for React Router v6
 
 const Navbar = () => {
     const [isOpen, setIsOpen] = useState(false);
+    const navigate = useNavigate(); // Get the navigate function
 
     const handleLogout = () => {
-        // Add your logout logic here, e.g. remove token from local storage
+        localStorage.removeItem('authToken'); // Clear session data (token)
         console.log('Logout clicked');
-      };
+        navigate('/', { replace: true }); // Navigate to home and replace the current history entry
+    };
 
-   
     return (
         <nav className="bg-gradient-to-r from-blue-800 to-blue-700 shadow-md h-24 opacity-70 " style={{ fontFamily: 'Arial, sans-serif' }}>
             <div className="container mx-auto px-4 space-x-20">
                 <div className="flex justify-between items-center py-3">
                     <div className="flex items-center mt-5">
-                        <span className="font-semibold text-xl text-white dark:text-white" >Enawega</span>
-                    </div>  
-                    <div className="hidden md:flex px-64 space-x-24   ">
-                        <a href="/dashboard" className="text-white dark:text-white hover:text-gray-900">join room</a>
-                        <a href="/department" className="text-white dark:text-white hover:text-gray-900">Settings</a>
+                        <span className="font-semibold text-xl text-white dark:text-white">Enawega</span>
+                    </div>
+                    <div className="hidden md:flex px-64 space-x-24">
+                        <a href="/rooms" className="text-white dark:text-white hover:text-gray-900">join room</a>
+                        <a href="/settings" className="text-white dark:text-white hover:text-gray-900">Settings</a>
                         <a href="/profile" className="text-white dark:text-white hover:text-gray-900">profile</a>
-                        <a href="/analysis"  className="text-white dark:text-white hover:text-gray-900">help</a>
+                        <a href="/help" className="text-white dark:text-white hover:text-gray-900">help</a>
                     </div>
                     <div className="flex items-center">
-                    <button
-            className="bg-white hover:bg-gray-300 text-red-500 font-bold py-2 px-4 rounded "
-            style={{
-              border: '1px solid red',
-              marginRight: 20,
-              marginTop: 10,
-            }}
-            onClick={handleLogout}
-          >
-            Logout
-          </button>
+                        <button
+                            className="bg-white hover:bg-gray-300 text-red-500 font-bold py-2 px-4 rounded"
+                            style={{
+                                border: '1px solid red',
+                                marginRight: 20,
+                                marginTop: 10,
+                            }}
+                            onClick={handleLogout}
+                        >
+                            Logout
+                        </button>
                         <button
                             onClick={() => setIsOpen(!isOpen)}
                             className="md:hidden ml-4 focus:outline-none"
